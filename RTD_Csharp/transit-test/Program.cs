@@ -5,6 +5,7 @@ using System.Text;
 using ProtoBuf;
 using transit_realtime;
 using System.Collections.Generic;
+using System.IO.Ports;
 
 namespace transit_test
 {
@@ -40,6 +41,12 @@ namespace transit_test
             ExtraFunctions.PrintTrips_ByStop(tripsForStop, stopNumber);
             Console.WriteLine(ExtraFunctions.getUnixTime());
 
+            String data = "Place a string here to send to arduino";
+            SerialPort sp = new SerialPort("COM7", 9600, Parity.None, 8, StopBits.One);
+            sp.Open();
+            sp.Write(data);
+            Console.WriteLine("Data Sent!");
+            sp.Close();
 
             Console.WriteLine("Press any key to continue");
             Console.ReadLine();
