@@ -17,7 +17,7 @@ namespace transit_test
         // Postcondition: List of trips created for that stop
         // Returns: Nothing
         //-----------------------------------------------------------------
-        public static void GetAllTimes(List<FeedEntity> list, string stop_id)
+        public static List<nextTime> GetAllTimes(List<FeedEntity> list, string stop_id)
         {
             List<Route_Times> tripsByStop = new List<Route_Times>();
 
@@ -41,7 +41,7 @@ namespace transit_test
                 tripsByStop.Add(newRoute);
             }
 
-            GetNextTime(tripsByStop);
+            return GetNextTime(tripsByStop);
 
         }
 
@@ -52,7 +52,7 @@ namespace transit_test
         // Postcondition: List of routes with all of next times
         // Returns: Nothing
         //-----------------------------------------------------------------
-        public static void GetNextTime(List<Route_Times> list)
+        public static List<nextTime> GetNextTime(List<Route_Times> list)
         {
             List<nextTime> tripsByRoute = new List<nextTime>();
 
@@ -85,8 +85,9 @@ namespace transit_test
 
                 }
             }
-
-           PrintRouteTimes(tripsByRoute);
+            
+            PrintRouteTimes(tripsByRoute);
+            return tripsByRoute;
 
         }
 
@@ -98,15 +99,25 @@ namespace transit_test
         // Postcondition: none
         // Returns: Nothing
         //-----------------------------------------------------------------
-        public static void PrintRouteTimes(List<nextTime> list)
+        public static String PrintRouteTimes(List<nextTime> list)
         {
-
+            String data = "";
             foreach (nextTime item in list)
             {
                 item.setTime();
-                Console.WriteLine("The route " + item.getRoute() + " will be here in " + item.getTime() + " minutes.");
+                if (item.getTime() == 0)
+                {
+                    data += "The route " + item.getRoute() + " will be here in less than 1 minute.";
+                }
+                else if (item.getTime() == 1) {
+                    data += "The route " + item.getRoute() + " will be here in " + item.getTime() + " minute.";
+                }
+                else {
+                    data += "The route " + item.getRoute() + " will be here in " + item.getTime() + " minutes.";
+                }
+                data += ";";
             }
-
+            return data;
         }
     }
 

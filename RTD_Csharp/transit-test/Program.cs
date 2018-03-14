@@ -35,13 +35,14 @@ namespace transit_test
            
             List<FeedEntity> tripsForStop = ExtraFunctions.StoreTrip_ByStop(tripFeed, stopNumber);
 
-            TimeFunctions.GetAllTimes(tripsForStop,stopNumber);
+            List<nextTime> nextTime = TimeFunctions.GetAllTimes(tripsForStop,stopNumber);
 
 
             ExtraFunctions.PrintTrips_ByStop(tripsForStop, stopNumber);
             Console.WriteLine(ExtraFunctions.getUnixTime());
 
-            String data = "Place a string here to send to arduino";
+            String data = TimeFunctions.PrintRouteTimes(nextTime);
+            Console.WriteLine(data);
             SerialPort sp = new SerialPort("COM7", 9600, Parity.None, 8, StopBits.One);
             sp.Open();
             sp.Write(data);
