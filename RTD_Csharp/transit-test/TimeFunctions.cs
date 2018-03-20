@@ -105,19 +105,9 @@ namespace transit_test
             foreach (nextTime item in list)
             {
                 item.setTime();
-                if (item.getTime() == 0)
-                {
-                    data += "The route " + item.getRoute() + " will be here in less than 1 minute.";
-                }
-                else if (item.getTime() == 1) {
-                    data += "The route " + item.getRoute() + " will be here in " + item.getTime() + " minute.";
-                }
-                else {
-                    data += "The route " + item.getRoute() + " will be here in " + item.getTime() + " minutes.";
-                }
-                data += ";";
+                data += item.getRoute() + ";" + item.getTime() + ";";
             }
-            return data;
+            return data; 
         }
     }
 

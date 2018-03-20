@@ -6,6 +6,7 @@ using ProtoBuf;
 using transit_realtime;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Threading;
 
 namespace transit_test
 {
@@ -14,41 +15,65 @@ namespace transit_test
         static void Main(string[] args)
         {
             //set urls for RTD data
-            String vehiclePositionUrl = "http://www.rtd-denver.com/google_sync/VehiclePosition.pb";
             String tripUrl = "http://www.rtd-denver.com/google_sync/TripUpdate.pb";
-            //get vehicle positions data from RTD.
+            //FeedMessage holds RTD data
+            FeedMessage tripFeed;
 
-            FeedMessage vehiclePositionFeed = getData(vehiclePositionUrl);
-            FeedMessage tripFeed = getData(tripUrl);
-
-            Stop stop_inst = new Stop();
-            Trip trip_inst = new Trip();
-
-            //print the data from vehicle positions.
-            //printAllVehiclePositions(vehiclePositionFeed);
-            //printTrips(tripFeed);
-            //printVP_for_stop(feed2, "23103");
-            //ExtraFunctions.VehiclePosition_ByStop(vehiclePositionFeed, "22730");
+            //Set the number of the bus stop you want information for.
+            // 12850, 26263
             String stopNumber = "12850";
-            String all = "all";
+            
 
-           
-            List<FeedEntity> tripsForStop = ExtraFunctions.StoreTrip_ByStop(tripFeed, stopNumber);
-
-            List<nextTime> nextTime = TimeFunctions.GetAllTimes(tripsForStop,stopNumber);
-
-
-            ExtraFunctions.PrintTrips_ByStop(tripsForStop, stopNumber);
-            Console.WriteLine(ExtraFunctions.getUnixTime());
-
-            String data = TimeFunctions.PrintRouteTimes(nextTime);
-            Console.WriteLine(data);
-            SerialPort sp = new SerialPort("COM7", 9600, Parity.None, 8, StopBits.One);
-            sp.Open();
-            sp.Write(data);
-            Console.WriteLine("Data Sent!");
-            sp.Close();
-
+           //declare lists needed
+            List<FeedEntity> tripsForStop;
+            List<nextTime> nextTime;
+            String data;
+            int count;
+            int delayTime;
+            //open the serial port
+            SerialPort sp = new SerialPort("COM5", 9600, Parity.None, 8, StopBits.One);
+            try
+            {
+                sp.Open();
+            }catch(Exception ex)
+            {
+                Console.WriteLine("Error opening port.");
+            }
+            while (true)
+            {
+                try
+                {
+                    //calculate the time for next busses
+                    tripFeed = getData(tripUrl);
+                    tripsForStop = ExtraFunctions.StoreTrip_ByStop(tripFeed, stopNumber);
+                    nextTime = TimeFunctions.GetAllTimes(tripsForStop, stopNumber);
+                    //stick the data in a string
+                    data = stopNumber + ";";
+                    data += TimeFunctions.PrintRouteTimes(nextTime);
+                    //calculate time to sleep
+                    //count number of ; marks
+                    count = 0;
+                    for (int x = 0;  x < data.Length; x++) {
+                        if (data[x] == ';')
+                        {
+                            count++;
+                        }
+                    }
+                    Console.WriteLine(count);
+                    //delay = number of routes time 5 seconds + 2 seconds
+                    delayTime = ((count - 1) / 2) * 5000 + 2000;
+                    //send the string with data to Arduino
+                    sp.WriteLine(data);
+                    Console.WriteLine(data);
+                    Console.WriteLine("Data Sent!");
+                    //delay the loop until arduino is ready for update. 
+                    Thread.Sleep(delayTime);
+                }catch(Exception ex)
+                {
+                    Console.WriteLine("Error writing data to serial.");
+                    break;
+                }
+            }
             Console.WriteLine("Press any key to continue");
             Console.ReadLine();
         }//end of main
